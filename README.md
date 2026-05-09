@@ -1,93 +1,113 @@
 # NoFishyBusiness
-Applied AI College Course Project
 
-Project DESCRIPTION***
+A locally-hosted, AI-assisted aquarium information web application. It provides fish care sheets, tank setup guidance, water chemistry analysis, maintenance schedules, and a conversational AI assistant — all grounded in a local SQLite knowledge base via a RAG pipeline.
 
+---
 
+## Setup and Run Instructions
 
-stuff stuff stuff
+### Prerequisites
 
+- Python 3.11 or higher
+- An OpenAI API key (gpt-4o-mini access required)
 
+### Steps
 
+1. **Clone the repository**
 
-# Example test cases - For eval file.
-- Ask the LLM a question that it may have difficulty answering.
-    = 
+   ```bash
+   git clone <repo-url>
+   cd NoFishyBusiness-SchoolWork
+   ```
 
-- Ask the LLM a question that it can't answer.
-    = The AI looks through its sources - To avoid a general LLM from answering
-    = "I don't know" = Success, as its properly using the RAG pipeline.
+2. **Create a virtual environment**
 
-- The LLM generates completely false information = Failed test case
-    = 
+   ```bash
+   python -m venv venv
+   ```
 
+3. **Activate the virtual environment**
 
+   - On macOS / Linux:
+     ```bash
+     source venv/bin/activate
+     ```
+   - On Windows (Command Prompt):
+     ```cmd
+     venv\Scripts\activate.bat
+     ```
+   - On Windows (PowerShell):
+     ```powershell
+     venv\Scripts\Activate.ps1
+     ```
 
-# TIPS
-Focus on architecture, not on what the AI outputs
-- Ensure that the prof can run the project on their computer
-    - Before completely submitting it, TEST IT OUT.
-    - DO the exact same process that the professor will go through
-        - In an empty directary.
-            - Walk through README.md steps one by one.
-        - Clone the repo.
-        - Ask for the OpenAI key
-            - Prof would insert their API key.
+4. **Install dependencies**
 
+   ```bash
+   pip install -r requirements.txt
+   ```
 
+5. **Configure your API key**
 
-Foursquare (free, no)
+   ```bash
+   cp .env.example .env
+   ```
 
+   Open `.env` and replace `your-openai-api-key-here` with your actual OpenAI API key:
 
+   ```
+   OPENAI_API_KEY=sk-...
+   ```
 
+6. **Populate the knowledge base** (first run only)
 
+   ```bash
+   python knowledge_base/seed.py
+   ```
 
+7. **Start the backend** (Terminal 1)
 
-Building a website:
-Ask Kiro for:
-- To provide the steps to actually run the website / code
+   ```bash
+   uvicorn backend.main:app --reload --port 8000
+   ```
 
+8. **Start the frontend** (Terminal 2)
 
-Prompt the AI:
-Explain the project AI to the AI.
+   ```bash
+   streamlit run frontend/app.py
+   ```
 
-Ask to make a website, with project details.
-- Build a website
-    - For aquarium hobbyist
-    - 
-- For a college course, but to be 
-- API budget: ONLY OpenAI Key
-    - "My prof will only have an OpenAI key."
-    - "He will clone my repo on an empty directory, and run the app locally".
-- The project for now, needs to be ran locally.
-    - Local data base
-        OR
-    - DO NOT USE A HOSTED DATABASE, unless access is given to prof.
-- Let's plan this before straight building.
+   The app will open automatically at `http://localhost:8501`.
 
-THIS IS FOR A PROOF OF CONCEPT APP.
+---
 
+## Running Tests
 
+```bash
+pytest tests/
+```
 
-# Stuff to consider:
-- UI
-- Stack
-- What is good enough for a first version of the app?
-    - The minimual viable product.
+## Running the Evaluation Suite
 
-In prof example, claude was able to produce 2 websites from a single prompt.
+Make sure the backend is running (step 7), then:
 
+```bash
+python eval/eval.py
+```
 
+---
 
+## Project Structure
 
-
-# Example steps for running the web:
-    After requirements.txt was installed...
-
-    In readme.md
-    1st - actiavate venv 
-
-    run the application: python3 app.py
-
-    System output:
-    Running on http://298.342.4234 <- THAT IS WHERE THE WEBSITE IS RUNNING (locally)
+```
+NoFishyBusiness/
+├── backend/           # FastAPI backend — API routes, RAG, tools
+│   └── tools/         # Individual tool implementations
+├── frontend/          # Streamlit frontend
+│   └── pages/         # One page per tool
+├── knowledge_base/    # SQLite database and seed script
+├── eval/              # Evaluation script and labeled test cases
+├── tests/             # Unit and property-based tests
+├── .env.example       # API key template
+└── requirements.txt   # Pinned Python dependencies
+```
