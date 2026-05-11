@@ -8,15 +8,15 @@ image of a test strip) and returns a danger assessment with corrective actions
 for each recognized water parameter.
 
 Flow:
-  1. Run topic_guard.check_topic(description) — return refusal if refused.
-  2. Use regex to detect recognizable parameter values in the description.
-     If none found, return a prompt message (no LLM call).
-  3. Call rag.retrieve(description) for threshold data.
-     Return 503 error if RAG fails.
-  4. Truncate context to 2000 tokens.
-  5. Call OpenAI (gpt-4o-mini, max_tokens=1500).
-     If image_base64 is provided, include it as a vision input.
-  6. Parse and return the structured response.
+    1. Run topic_guard.check_topic(description) — return refusal if refused.
+    2. Use regex to detect recognizable parameter values in the description.
+        If none found, return a prompt message (no LLM call).
+    3. Call rag.retrieve(description) for threshold data.
+        Return 503 error if RAG fails.
+    4. Truncate context to 2000 tokens.
+    5. Call OpenAI (gpt-4o-mini, max_tokens=1500).
+        If image_base64 is provided, include it as a vision input.
+    6. Parse and return the structured response.
 
 Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 10.4, 11.1
 """
@@ -98,15 +98,15 @@ is aquarium-related; otherwise decline politely.
 
 Return ONLY valid JSON matching this exact schema (no markdown, no extra text):
 {{
-  "parameters": [
+    "parameters": [
     {{
-      "name": "<string>",
-      "value": "<string>",
-      "status": "safe" | "caution" | "danger",
-      "corrective_action": "<string>" | null
+        "name": "<string>",
+        "value": "<string>",
+        "status": "safe" | "caution" | "danger",
+        "corrective_action": "<string>" | null
     }}
-  ],
-  "summary": "<string>"
+    ],
+    "summary": "<string>"
 }}
 """
 
@@ -147,19 +147,27 @@ def analyze_chemistry(description: str, image_base64: str | None) -> dict | JSON
         )
 
     # 2. Parameter detection --------------------------------------------------
-    # If no image is provided, require recognizable parameter values in the text.
-    # If an image is provided, skip this check — the image may contain the values.
+    # If no image is provided, check for recognizable parameter values OR
+    # aquarium-related keywords. Free-form sentences like "my shrimp seem
+    # stressed, ammonia might be high" are valid even without exact numbers.
     if not image_base64 and not _has_parameter_values(description):
-        return JSONResponse(
-            status_code=200,
-            content={
-                "message": (
-                    "Please provide specific parameter readings "
-                    "(e.g., ammonia, nitrite, pH, temperature) for analysis."
-                ),
-                "error_type": "no_parameters",
-            },
+        # Check if the description at least mentions chemistry-related terms
+        chemistry_terms = re.compile(
+            r"\b(ammonia|nitrite|nitrate|ph|temperature|hardness|oxygen|"
+            r"ppm|water|tank|fish|shrimp|sick|stressed|dying|cloudy|smell)\b",
+            re.IGNORECASE
         )
+        if not chemistry_terms.search(description):
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "message": (
+                        "Please describe your water conditions or mention specific "
+                        "parameters (e.g., ammonia, pH, temperature) for analysis."
+                    ),
+                    "error_type": "no_parameters",
+                },
+            )
 
     # 3. RAG retrieval --------------------------------------------------------
     try:

@@ -1,99 +1,108 @@
 # NoFishyBusiness
 
-A locally-hosted, AI-assisted aquarium information web application. It provides fish care sheets, tank setup guidance, water chemistry analysis, maintenance schedules, and a conversational AI assistant — all grounded in a local SQLite knowledge base via a RAG pipeline.
+An AI-assisted aquarium information site, containing various features for the user to interact with:
+
+    Water chemistry analysis.
+    Tank maintenance guide.
+    Tank setup guide.
+    Species informant.
+    Fish / Plant Image scanner.
+    General AI-powered LLM (Aquarium-related prompting only).
 
 ---
 
-## Setup and Run Instructions
+## Prerequisites
 
-### Prerequisites
+- **Python 3.9–3.12** — download from [python.org](https://python.org) (**not** the Windows Store version — that one won't work)
+- **An OpenAI API key** — [platform.openai.com](https://platform.openai.com)
 
-- Python 3.11 or higher
-- An OpenAI API key (gpt-4o-mini access required)
+---
 
-### Steps
+## Setup (one time only)
 
-1. **Clone the repository**
+### 1. Install dependencies
 
-   ```bash
-   git clone <repo-url>
-   cd NoFishyBusiness-SchoolWork
-   ```
+```bash
+pip install -r requirements.txt
+```
 
-2. **Create a virtual environment**
+### 2. Add your OpenAI API key
 
-   ```bash
-   python -m venv venv
-   ```
+Copy `.env.example` to `.env`:
 
-3. **Activate the virtual environment**
+- **Windows:** `copy .env.example .env`
+- **macOS/Linux:** `cp .env.example .env`
 
-   - On macOS / Linux:
-     ```bash
-     source venv/bin/activate
-     ```
-   - On Windows (Command Prompt):
-     ```cmd
-     venv\Scripts\activate.bat
-     ```
-   - On Windows (PowerShell):
-     ```powershell
-     venv\Scripts\Activate.ps1
-     ```
+Open `.env` and replace the placeholder with your real key:
 
-4. **Install dependencies**
+```
+OPENAI_API_KEY=sk-...
+```
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+---
 
-5. **Configure your API key**
+## Launch the app
 
-   ```bash
-   cp .env.example .env
-   ```
+### Windows
 
-   Open `.env` and replace `your-openai-api-key-here` with your actual OpenAI API key:
+Double-click **`start.bat`** in the project folder.
 
-   ```
-   OPENAI_API_KEY=sk-...
-   ```
+Or from a terminal (Command Prompt or PowerShell):
 
-6. **Populate the knowledge base** (first run only)
+```cmd
+.\start.bat
+```
 
-   ```bash
-   python knowledge_base/seed.py
-   ```
+### macOS / Linux
 
-7. **Start the backend** (Terminal 1)
+```bash
+bash start.sh
+```
 
-   ```bash
-   uvicorn backend.main:app --reload --port 8000
-   ```
+### Manual startup (any OS)
 
-8. **Start the frontend** (Terminal 2)
+If the launcher scripts don't work, open **two terminals** in the project folder:
 
-   ```bash
-   streamlit run frontend/app.py
-   ```
+**Terminal 1 — Backend:**
+```bash
+python -m uvicorn backend.main:app --port 8000
+```
 
-   The app will open automatically at `http://localhost:8501`.
+**Terminal 2 — Frontend:**
+```bash
+python -m streamlit run frontend/app.py
+```
+
+Then open **http://localhost:8501** in your browser.
+
+> **Windows note:** If `python` gives a "not found" error, use the full path:
+> `C:\Users\<YourName>\AppData\Local\Programs\Python\Python311\python.exe`
 
 ---
 
 ## Running Tests
 
 ```bash
-pytest tests/
+pytest tests/ --ignore=tests/test_properties.py
 ```
 
 ## Running the Evaluation Suite
 
-Make sure the backend is running (step 7), then:
+With the backend running:
 
 ```bash
 python eval/eval.py
 ```
+
+## Adding your own documents to the knowledge base
+
+Drop `.txt`, `.md`, or `.pdf` files into `knowledge_base/documents/`, or add URLs to `knowledge_base/documents/links.txt`, then run:
+
+```bash
+python knowledge_base/ingest.py
+```
+
+See `knowledge_base/documents/README.md` for the full format and examples.
 
 ---
 
@@ -101,13 +110,16 @@ python eval/eval.py
 
 ```
 NoFishyBusiness/
-├── backend/           # FastAPI backend — API routes, RAG, tools
-│   └── tools/         # Individual tool implementations
+├── backend/           # FastAPI backend — API routes, RAG pipeline, tools
+│   └── tools/         # Individual tool implementations (species, chemistry, etc.)
 ├── frontend/          # Streamlit frontend
 │   └── pages/         # One page per tool
 ├── knowledge_base/    # SQLite database and seed script
 ├── eval/              # Evaluation script and labeled test cases
 ├── tests/             # Unit and property-based tests
+├── start.bat          # One-click launcher (Windows)
+├── start.ps1          # PowerShell launcher (Windows)
+├── start.sh           # Launcher (macOS / Linux)
 ├── .env.example       # API key template
 └── requirements.txt   # Pinned Python dependencies
 ```

@@ -5,15 +5,15 @@ Creates the aquarium.db SQLite database schema and provides helper functions
 for inserting and retrieving knowledge base records.
 
 Schema:
-  - kb_records: primary records table
-  - kb_fts: FTS5 virtual table mirroring kb_records for full-text search
-  - kb_ai / kb_ad: triggers to keep FTS5 in sync on INSERT and DELETE
+    - kb_records: primary records table
+    - kb_fts: FTS5 virtual table mirroring kb_records for full-text search
+    - kb_ai / kb_ad: triggers to keep FTS5 in sync on INSERT and DELETE
 """
 
-import sqlite3
-import os
-import sys
-from typing import Optional
+import sqlite3                  # stuff
+import os                       # stuff
+import sys                      # stuff
+from typing import Optional     # stuff
 
 # ---------------------------------------------------------------------------
 # Path helpers
@@ -123,7 +123,7 @@ def insert_record(
         db_path:      Path to the SQLite database file.
         species_name: Fish/plant name or topic name (e.g. "Nitrogen Cycle").
         category:     One of "fish", "plant", "chemistry", "maintenance",
-                      "disease", or "aquascaping".
+                        "disease", or "aquascaping".
         content:      Full care sheet or knowledge text.
 
     Returns:

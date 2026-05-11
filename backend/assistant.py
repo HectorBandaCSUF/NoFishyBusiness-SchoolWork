@@ -84,21 +84,21 @@ def get_assistant_reply(message: str, history: list[dict]) -> dict:
     """Generate an AI assistant reply for the given message and conversation history.
 
     Flow:
-      1. Run ``topic_guard.check_topic(message)``; return refusal if refused.
-      2. Call ``rag.retrieve(message)`` for context; return "insufficient
-         information" message if no records are found.
-      3. Truncate context via ``token_budget.truncate_context(context, 2000)``.
-      4. Build the messages array: prepend the last 10 history items, then
-         add the system message and the current user message.
-      5. Call OpenAI with ``max_tokens=1500``; parse ``reply`` and
-         ``suggested_section`` from the response.
-      6. On any OpenAI error, log it and return the "temporarily unavailable"
-         message.
+    1. Run ``topic_guard.check_topic(message)``; return refusal if refused.
+    2. Call ``rag.retrieve(message)`` for context; return "insufficient
+        information" message if no records are found.
+    3. Truncate context via ``token_budget.truncate_context(context, 2000)``.
+    4. Build the messages array: prepend the last 10 history items, then
+        add the system message and the current user message.
+    5. Call OpenAI with ``max_tokens=1500``; parse ``reply`` and
+        ``suggested_section`` from the response.
+    6. On any OpenAI error, log it and return the "temporarily unavailable"
+        message.
 
     Args:
         message: The user's current message.
         history: Conversation history as a list of ``{"role": ..., "content": ...}``
-                 dicts. The backend uses the last 10 items (5 pairs).
+                dicts. The backend uses the last 10 items (5 pairs).
 
     Returns:
         A dict with keys ``"reply"`` (str) and ``"suggested_section"`` (str | None).
@@ -117,8 +117,27 @@ def get_assistant_reply(message: str, history: list[dict]) -> dict:
         ambiguous_instruction = _AMBIGUOUS_SYSTEM_INSTRUCTION
 
     # 2. RAG retrieval --------------------------------------------------------
+    # Extract meaningful keywords from the message for better FTS5 matching.
+    # Common stop words like "tell", "me", "about", "what", "how" don't exist
+    # in the knowledge base and cause FTS5 to return zero results.
+    _STOP_WORDS = {
+        "tell", "me", "about", "what", "how", "is", "are", "the", "a", "an",
+        "do", "does", "can", "could", "would", "should", "will", "my", "your",
+        "for", "to", "in", "of", "and", "or", "with", "on", "at", "by",
+        "good", "best", "need", "want", "like", "get", "have", "has", "had",
+        "some", "any", "all", "this", "that", "these", "those", "it", "its",
+        "please", "help", "give", "show", "explain", "describe", "list",
+    }
+    import re as _re
+    words = _re.findall(r"[a-z0-9]+", message.lower())
+    keywords = [w for w in words if w not in _STOP_WORDS and len(w) > 2]
+    rag_query = " ".join(keywords) if keywords else message
+
     try:
-        records = retrieve(message)
+        records = retrieve(rag_query)
+        # If keyword query returns nothing, fall back to the full message
+        if not records and rag_query != message:
+            records = retrieve(message)
     except RAGError as exc:
         logger.log_error("RAGError", str(exc))
         return {

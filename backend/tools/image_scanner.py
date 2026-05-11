@@ -134,7 +134,7 @@ def scan_image(file_bytes: bytes, content_type: str) -> dict | JSONResponse:
     # 3. Validate image integrity (Pillow decode) -----------------------------
     try:
         img = Image.open(io.BytesIO(file_bytes))
-        img.verify()  # raises if corrupt
+        img.load()  # fully decode the image to catch truncation/corruption
     except (UnidentifiedImageError, Exception) as exc:
         logger.log_error("ImageDecodeError", str(exc))
         return JSONResponse(

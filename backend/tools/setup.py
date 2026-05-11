@@ -73,11 +73,16 @@ def get_setup_guide(tank_gallons: float, experience_level: str) -> dict:
     from fastapi.responses import JSONResponse  # local import to avoid circular
 
     # ------------------------------------------------------------------
-    # 1. RAG retrieval
+    # 1. RAG retrieval — try multiple query angles
     # ------------------------------------------------------------------
     query = "beginner fish plant aquascaping setup"
     try:
         records = retrieve(query, top_k=3)
+        # Fallback: try individual category queries if combined returns nothing
+        if not records:
+            records = retrieve("fish beginner easy", top_k=3)
+        if not records:
+            records = retrieve("plant aquascaping", top_k=3)
     except RAGError as exc:
         logger.log_error("RAGError", str(exc))
         return JSONResponse(

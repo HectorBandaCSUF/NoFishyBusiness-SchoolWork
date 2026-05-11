@@ -78,10 +78,13 @@ def get_maintenance_guide(
         HTTP 502 and ``error_type: "api_error"``.
     """
     # ------------------------------------------------------------------
-    # 1. Build RAG query
+    # 1. Build RAG query — extract meaningful keywords from species names
     # ------------------------------------------------------------------
-    species_part = " ".join(fish_species) if fish_species else ""
-    query = f"nitrogen cycle maintenance {species_part}".strip()
+    # Use the sanitize_query helper so free-form species names like
+    # "Neon Tetras" or "Some shrimp" don't break FTS5
+    from backend.rag import sanitize_query
+    species_keywords = sanitize_query(" ".join(fish_species)) if fish_species else ""
+    query = f"nitrogen cycle maintenance {species_keywords}".strip()
 
     # ------------------------------------------------------------------
     # 2. Retrieve from knowledge base
@@ -99,13 +102,22 @@ def get_maintenance_guide(
         )
 
     # ------------------------------------------------------------------
-    # 3. Handle empty result — no LLM call
+    # 3. Handle empty result — broaden the query and try again
     # ------------------------------------------------------------------
+    if not records:
+        # Try a broader fallback query focused on maintenance alone
+        try:
+            records = retrieve("maintenance nitrogen cycle feeding")
+        except RAGError:
+            pass
+
+    # If still nothing, return a helpful message
     if not records:
         return {
             "message": (
-                "No maintenance information was found for the given inputs. "
-                "Please ensure the knowledge base contains maintenance records."
+                "No maintenance information was found. "
+                "Please ensure the knowledge base is seeded by running: "
+                "python knowledge_base/seed.py"
             )
         }
 

@@ -161,8 +161,24 @@ def check_topic(query: str) -> TopicResult:
         # Empty or punctuation-only query — treat as refused.
         return TopicResult(status="refused", message=_REFUSAL_MESSAGE)
 
-    aquarium_tokens = meaningful_tokens & _VOCABULARY
-    off_topic_tokens = meaningful_tokens - _VOCABULARY
+    # Check each token against the vocabulary, also trying common suffixes
+    # (plurals, -ing, -ed) so "guppies" matches "guppy", "feeding" matches "feed", etc.
+    def _is_aquarium_token(token: str) -> bool:
+        if token in _VOCABULARY:
+            return True
+        # Try stripping common suffixes for plural/verb forms
+        for suffix in ("ies", "es", "s", "ing", "ed", "er"):
+            if token.endswith(suffix) and len(token) - len(suffix) >= 3:
+                stem = token[: -len(suffix)]
+                if stem in _VOCABULARY:
+                    return True
+                # "ies" → "y" (guppies → guppy)
+                if suffix == "ies" and (stem + "y") in _VOCABULARY:
+                    return True
+        return False
+
+    aquarium_tokens = {t for t in meaningful_tokens if _is_aquarium_token(t)}
+    off_topic_tokens = meaningful_tokens - aquarium_tokens
 
     if not aquarium_tokens:
         # No aquarium terms at all → refuse.

@@ -1,0 +1,80 @@
+# links.txt — Web pages to ingest into the NoFishyBusiness knowledge base
+# ─────────────────────────────────────────────────────────────────────────────
+# Format:  {description: <URL>}
+#
+# Valid categories: fish, plant, chemistry, maintenance, disease, aquascaping, water, substrate, 
+#
+# Lines starting with # are comments and are ignored.
+# Blank lines are also ignored.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Wiki pages
+{Amano Shrimp: https://en.wikipedia.org/wiki/Caridina_multidentata}
+{Angelfish: https://en.wikipedia.org/wiki/Pterophyllum_scalare}
+{Arowana: https://en.wikipedia.org/wiki/Arowana}
+{Bamboo Shrimp: https://en.wikipedia.org/wiki/Atyopsis_moluccensis}
+{Betta Fish: https://en.wikipedia.org/wiki/Siamese_fighting_fish}
+{Bristlenose Pleco: https://en.wikipedia.org/wiki/Ancistrus}
+{Cardinal Tetra: https://en.wikipedia.org/wiki/Cardinal_tetra}
+{Cherry Barb: https://en.wikipedia.org/wiki/Cherry_barb}
+{Cherry Shrimp: https://en.wikipedia.org/wiki/Neocaridina_davidi}
+{Clown Loach: https://en.wikipedia.org/wiki/Clown_loach}
+{Congo Tetra: https://en.wikipedia.org/wiki/Congo_tetra}
+{Corydoras Catfish: https://en.wikipedia.org/wiki/Corydoras}
+{Crystal Red Shrimp: https://en.wikipedia.org/wiki/Bee_shrimp}
+{Discus Fish: https://en.wikipedia.org/wiki/Discus_(fish)}
+{Dwarf Gourami: https://en.wikipedia.org/wiki/Dwarf_gourami}
+{German Blue Ram: https://en.wikipedia.org/wiki/Ram_cichlid}
+{Ghost Shrimp: https://en.wikipedia.org/wiki/Palaemonetes_paludosus}
+{Glass Catfish: https://en.wikipedia.org/wiki/Kryptopterus_vitreolus}
+{Goldfish: https://en.wikipedia.org/wiki/Goldfish}
+{Guppy: https://en.wikipedia.org/wiki/Guppy}
+{Harlequin Rasbora: https://en.wikipedia.org/wiki/Harlequin_rasbora}
+{Kuhli Loach: https://en.wikipedia.org/wiki/Kuhli_loach}
+{Molly Fish: https://en.wikipedia.org/wiki/Poecilia_sphenops}
+{Neon Tetra: https://en.wikipedia.org/wiki/Neon_tetra}
+{Oscar Fish: https://en.wikipedia.org/wiki/Oscar_(fish)}
+{Otocinclus Catfish: https://en.wikipedia.org/wiki/Otocinclus}
+{Pearl Gourami: https://en.wikipedia.org/wiki/Pearl_gourami}
+{Platy Fish: https://en.wikipedia.org/wiki/Platy_(fish)}
+{Rummy-nose Tetra: https://en.wikipedia.org/wiki/Rummy-nose_tetra}
+{Siamese Algae Eater: https://en.wikipedia.org/wiki/Siamese_algae_eater}
+{Swordtail Fish: https://en.wikipedia.org/wiki/Green_swordtail}
+{Tiger Barb: https://en.wikipedia.org/wiki/Tiger_barb}
+{White Cloud Mountain Minnow: https://en.wikipedia.org/wiki/White_cloud_mountain_minnow}
+{Zebra Danio: https://en.wikipedia.org/wiki/Zebra_danio}
+
+
+
+# Tank aquascaping, maintenace, setup.
+{Aquarium Substrate Guide: https://en.wikipedia.org/wiki/Substrate_(aquarium)}
+{Aquarium Rocks and Wood: https://injaf.org/articles-guides/beginners-guides/safe-and-unsafe-rocks-and-wood-for-aquariums/}
+
+{The Nitrogen Cycle: https://en.wikipedia.org/wiki/Nitrogen_cycle}    # maintenance_nitrogen cycle wikipedia
+
+
+
+# Informational sites, databases.
+{General info: https://www.fishbase.se/search.php}              #
+{General info: https://www.seriouslyfish.com/}                  # 
+
+
+
+# Hobby sites, forums, discussions.
+
+
+
+# Fish; General
+
+
+
+# Shrimp; General
+{Shrimp Store: https://shrimpybusiness.com/}
+
+
+# Plants; General
+{Plant Store: https://www.flowgrow.de/db/aquaticplants}
+
+
+
