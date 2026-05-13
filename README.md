@@ -82,17 +82,35 @@ Then open **http://localhost:8501** in your browser.
 
 ## Running Tests
 
-```bash
+```cmd
 pytest tests/ --ignore=tests/test_properties.py
 ```
 
+> If `pytest` isn't found, use the full path:
+> `C:\Users\<YourName>\AppData\Local\Programs\Python\Python311\python.exe -m pytest tests/ --ignore=tests/test_properties.py`
+
 ## Running the Evaluation Suite
 
-With the backend running:
+With the backend running (started via `start.bat` or manually):
 
-```bash
-python eval/eval.py
+**Windows:**
+```cmd
+eval.bat
 ```
+
+**With options:**
+```cmd
+eval.bat --live      # include LLM tests (costs API credits)
+eval.bat --report    # save results to eval/test_results.md
+```
+
+**macOS / Linux:**
+```bash
+python3 eval/eval.py
+python3 eval/eval.py --live --report
+```
+
+> **Note:** The eval suite requires the backend to be running first.
 
 ## Adding your own documents to the knowledge base
 

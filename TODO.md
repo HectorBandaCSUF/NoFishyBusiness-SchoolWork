@@ -15,5 +15,3 @@ Right now, the `knowledge_base` contains a set number of acceptable input keywor
 - Add instructions to README.md for closing / stopping the program (frontend + backend)
     - 
 
-
-
