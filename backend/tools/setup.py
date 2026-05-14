@@ -17,6 +17,8 @@ from dotenv import load_dotenv
 
 from backend import logger
 from backend import token_budget
+from backend.models import UserContext
+from backend.prompt_factory import PromptFactory
 from backend.rag import RAGError, retrieve
 
 # ---------------------------------------------------------------------------
@@ -114,33 +116,21 @@ def get_setup_guide(tank_gallons: float, experience_level: str) -> dict:
     context = token_budget.truncate_context(raw_context, 2000)
 
     # ------------------------------------------------------------------
-    # 4. Build system prompt
+    # 4. Build system prompt via PromptFactory — "The Project Planner"
     # ------------------------------------------------------------------
-    system_prompt = (
-        "You are an expert aquarium advisor. "
-        "Use ONLY the knowledge base context provided below to generate a "
-        "beginner-friendly tank setup guide. "
-        "Do NOT introduce species, plants, or layouts that are absent from "
-        "the provided context.\n\n"
-        "Return a single JSON object — no markdown fences, no extra text — "
-        "with exactly these keys:\n"
-        "  fish_recommendations: array of objects, each with:\n"
-        "    name (string), difficulty (string, must be \"easy\"), "
-        "min_tank_gallons (integer ≤ " + str(int(tank_gallons)) + ")\n"
-        "  plant_recommendations: array of objects, each with:\n"
-        "    name (string), difficulty (string, must be \"easy\")\n"
-        "  aquascaping_idea: object with:\n"
-        "    substrate (string), hardscape (string), plant_zones (array of strings)\n\n"
-        "Requirements:\n"
-        "  - fish_recommendations must contain at least 3 entries, all with "
-        "difficulty \"easy\" and min_tank_gallons ≤ " + str(int(tank_gallons)) + "\n"
-        "  - plant_recommendations must contain at least 2 entries, all with "
-        "difficulty \"easy\"\n"
-        "  - aquascaping_idea.plant_zones must contain at least 2 entries\n\n"
-        "Knowledge base context:\n"
-        "---\n"
-        f"{context}\n"
-        "---"
+    # The experience_level is passed as a UserContext so the PromptFactory
+    # can inject the correct tone modifier AND the setup template uses it
+    # to enforce strict species filtering (no Discus for beginners, etc.)
+    user_ctx = UserContext.from_experience_level(experience_level)
+
+    system_prompt = PromptFactory.get_prompt(
+        feature_id="setup",
+        context=context,
+        user=user_ctx,
+        extra={
+            "tank_size":        str(int(tank_gallons)),
+            "experience_level": experience_level,
+        },
     )
 
     user_message = (

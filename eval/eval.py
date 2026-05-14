@@ -47,15 +47,15 @@ EXIT CODES
 ═══════════════════════════════════════════════════════════════════════════════
 """
 
-import argparse          # CLI argument parsing
-import json              # JSON serialisation / deserialisation
-import os                # File path helpers
-import sys               # sys.exit()
-import time              # Timestamps for the report
-from collections import defaultdict   # Group results by feature area
-from datetime import datetime         # Human-readable timestamps
+import argparse                         # CLI argument parsing
+import json                             # JSON serialisation / deserialisation
+import os                               # File path helpers
+import sys                              # sys.exit()
+import time                             # Timestamps for the report
+from collections import defaultdict     # Group results by feature area
+from datetime import datetime           # User-readable timestamps
 
-import requests          # HTTP client for calling the backend
+import requests                         # HTTP client for calling the backend
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Paths & defaults
@@ -263,9 +263,9 @@ def send_request(backend_url: str, case: dict) -> tuple:
     Send the HTTP request described by a test case and return (response, error).
 
     Supports:
-      • GET  — no body (used for /health)
-      • POST with JSON payload (most endpoints)
-      • POST with multipart/form-data (image-scan endpoint)
+        • GET  — no body (used for /health)
+        • POST with JSON payload (most endpoints)
+        • POST with multipart/form-data (image-scan endpoint)
 
     The test case signals multipart by setting "content_type": "multipart".
     For multipart tests, "input" must be a dict with a "file_path" key pointing

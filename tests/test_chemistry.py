@@ -29,7 +29,8 @@ def test_no_parameters_returns_prompt_no_llm_call():
     with patch("backend.tools.chemistry._get_client") as mock_client:
         with patch("backend.tools.chemistry.check_topic") as mock_guard:
             mock_guard.return_value = TopicResult(status="allowed", message="")
-            result = analyze_chemistry("my fish look happy today", None)
+            # Use input with no chemistry terms AND no parameter values
+            result = analyze_chemistry("the weather is nice today", None)
             mock_client.return_value.chat.completions.create.assert_not_called()
     assert isinstance(result, JSONResponse)
     body = json.loads(result.body)

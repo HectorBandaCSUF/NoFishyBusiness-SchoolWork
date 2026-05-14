@@ -43,11 +43,11 @@ def sanitize_query(text: str) -> str:
 
     Steps:
     1. Lowercase and strip punctuation that FTS5 treats as operators
-       (periods, question marks, exclamation marks, commas, colons, etc.)
+        (periods, question marks, exclamation marks, commas, colons, etc.)
     2. Remove stop words that don't appear in the knowledge base.
     3. Return the remaining keywords joined by spaces.
     4. If nothing survives, return the original text with only punctuation
-       stripped (so FTS5 at least gets something to work with).
+        stripped (so FTS5 at least gets something to work with).
 
     Examples:
         "Tell me about guppies!"          → "guppies"

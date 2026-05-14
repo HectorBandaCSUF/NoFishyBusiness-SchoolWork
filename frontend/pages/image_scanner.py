@@ -18,8 +18,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from frontend.app import BACKEND_URL   # Base URL constant (http://localhost:8000)
 
-# ── Page config ───────────────────────────────────────────────────────────────
-st.set_page_config(page_title="Image Scanner", page_icon="📷")
+# ── Page title ────────────────────────────────────────────────────────────────
 st.title("📷 Image Scanner")
 st.markdown("Upload a photo of a fish or plant to identify the species and assess its health.")
 

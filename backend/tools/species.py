@@ -16,6 +16,8 @@ import openai
 from fastapi.responses import JSONResponse
 
 from backend import logger, token_budget
+from backend.models import UserContext
+from backend.prompt_factory import PromptFactory
 from backend.rag import RAGError, retrieve
 
 
@@ -32,32 +34,6 @@ def _get_client() -> openai.OpenAI:
     if _client is None:
         _client = openai.OpenAI()
     return _client
-
-
-# ---------------------------------------------------------------------------
-# System prompt template
-# ---------------------------------------------------------------------------
-
-_SYSTEM_PROMPT_TEMPLATE = """\
-You are an expert aquarium care assistant. Using ONLY the information provided
-in the context below, return a JSON object describing the requested fish species.
-
-Context:
-{context}
-
-Return ONLY valid JSON matching this exact schema (no markdown, no extra text):
-{{
-  "species_name": "<string>",
-  "behavior": "<string>",
-  "compatible_tank_mates": ["<string>", ...],
-  "temperature_f": {{"min": <float>, "max": <float>}},
-  "ph": {{"min": <float>, "max": <float>}},
-  "hardness_dgh": {{"min": <float>, "max": <float>}},
-  "min_tank_gallons": <int>,
-  "difficulty": "easy" | "moderate" | "advanced",
-  "maintenance_notes": "<string>"
-}}
-"""
 
 
 # ---------------------------------------------------------------------------
@@ -85,9 +61,10 @@ def get_species_info(species_name: str) -> dict | JSONResponse:
         :class:`fastapi.responses.JSONResponse` with an appropriate error
         status code and body on failure.
     """
-    # 1. RAG retrieval --------------------------------------------------------
+    # 1. RAG retrieval — fetch top 5 to get species + related documents
+    # (e.g. asking about Betta also pulls low-flow filter and disease records)
     try:
-        records = retrieve(species_name)
+        records = retrieve(species_name, top_k=5)
     except RAGError as exc:
         logger.log_error("RAGError", str(exc))
         return JSONResponse(
@@ -108,11 +85,20 @@ def get_species_info(species_name: str) -> dict | JSONResponse:
             },
         )
 
-    # 3. Build and truncate context -------------------------------------------
+    # 3. Build and truncate context — also fetch related documents
+    # The species tool fetches top_k=5 to get both the species record AND
+    # related documents (e.g. compatible tank mates, disease look-alikes)
     raw_context = "\n\n".join(record.content for record in records)
     context = token_budget.truncate_context(raw_context, 2000)
 
-    system_prompt = _SYSTEM_PROMPT_TEMPLATE.format(context=context)
+    # Use PromptFactory to get the "species" persona prompt.
+    # The guest profile is used since species lookups don't have a user level.
+    # When user accounts are added, pass the real UserContext here.
+    system_prompt = PromptFactory.get_prompt(
+        feature_id="species",
+        context=context,
+        user=UserContext.guest(),
+    )
 
     # 4. OpenAI call ----------------------------------------------------------
     try:

@@ -16,6 +16,7 @@ If the database is unavailable at import time, _DB_AVAILABLE is set to False
 and check_topic() returns an error TopicResult without forwarding to the LLM.
 """
 
+import difflib
 import os
 import re
 import sqlite3
@@ -175,6 +176,13 @@ def check_topic(query: str) -> TopicResult:
                 # "ies" → "y" (guppies → guppy)
                 if suffix == "ies" and (stem + "y") in _VOCABULARY:
                     return True
+        # Fuzzy match — catches typos, transpositions, and misspellings
+        # (e.g. "aquarim" → "aquarium", "fihs" → "fish", "bata" → "betta")
+        # Only attempt fuzzy matching for tokens long enough to be meaningful.
+        if len(token) >= 4:
+            matches = difflib.get_close_matches(token, _VOCABULARY, n=1, cutoff=0.82)
+            if matches:
+                return True
         return False
 
     aquarium_tokens = {t for t in meaningful_tokens if _is_aquarium_token(t)}

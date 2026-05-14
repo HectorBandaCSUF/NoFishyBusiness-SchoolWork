@@ -240,7 +240,7 @@ def parse_filename(filename: str) -> tuple[str, str]:
 
 # ── URL list parsing ──────────────────────────────────────────────────────────
 
-def parse_links_file(links_path: str) -> list[tuple[str, str]]:
+def parse_links_file(links_path: str) -> list[tuple[str, str]]:     # Link Extraction
     """
     Parse links.txt and return a list of (url, label) tuples.
 
@@ -272,10 +272,10 @@ def parse_links_file(links_path: str) -> list[tuple[str, str]]:
         url   = url.strip()
 
         # Strip any trailing inline comment (e.g. "https://... # some note")
-        url = url.split("#")[0].strip()
+        url = url.split("#")[0].strip()                             # Ignore comments.
 
-        if not url.startswith(("http://", "https://")):
-            print(f"  [SKIP] Invalid URL for {label!r}: {url!r}")
+        if not url.startswith(("http://", "https://")):             # 
+            print(f"  [SKIP] Invalid URL for {label!r}: {url!r}")   # 
             continue
 
         entries.append((url, label))

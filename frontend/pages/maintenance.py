@@ -15,8 +15,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from frontend.app import backend_post   # Shared POST helper
 
-# ── Page config ───────────────────────────────────────────────────────────────
-st.set_page_config(page_title="Maintenance Guide", page_icon="🔧")
+# ── Page title ────────────────────────────────────────────────────────────────
 st.title("🔧 Maintenance Guide")
 st.markdown("Get a personalized maintenance schedule for your aquarium.")
 
@@ -54,8 +53,8 @@ if submitted:
             st.info(result["message"])   # Show as an informational banner, not an error
         else:
             # ── Nitrogen Cycle ────────────────────────────────────────────
-            st.subheader("Nitrogen Cycle")
-            st.write(result.get("nitrogen_cycle", "N/A"))   # Long text block
+            #st.subheader("Nitrogen Cycle")
+            #st.write(result.get("nitrogen_cycle", "N/A"))   # Long text block
 
             # ── Feeding Schedule ──────────────────────────────────────────
             st.subheader("Feeding Schedule")

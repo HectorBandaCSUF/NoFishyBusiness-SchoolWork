@@ -2,18 +2,20 @@
 
 An AI-assisted aquarium information site, containing various features for the user to interact with:
 
+    General LLM (OpenAI API).
     Water chemistry analysis.
+    Fish / Plant Image scanner.
     Tank maintenance guide.
     Tank setup guide.
     Species informant.
-    Fish / Plant Image scanner.
-    General AI-powered LLM (Aquarium-related prompting only).
+    Water Volume Calculator
+
 
 ---
 
 ## Prerequisites
 
-- **Python 3.9–3.12** — download from [python.org](https://python.org) (**not** the Windows Store version — that one won't work)
+- **Python 3** 
 - **An OpenAI API key** — [platform.openai.com](https://platform.openai.com)
 
 ---
@@ -95,13 +97,13 @@ With the backend running (started via `start.bat` or manually):
 
 **Windows:**
 ```cmd
-eval.bat
+.\eval.bat
 ```
 
 **With options:**
 ```cmd
-eval.bat --live      # include LLM tests (costs API credits)
-eval.bat --report    # save results to eval/test_results.md
+.\eval.bat --live      # include LLM tests (costs API credits)
+.\eval.bat --report    # save results to eval/test_results.md
 ```
 
 **macOS / Linux:**

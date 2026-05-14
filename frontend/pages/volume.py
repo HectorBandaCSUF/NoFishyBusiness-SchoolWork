@@ -13,8 +13,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from frontend.app import backend_post   # Shared POST helper with error handling
 
-# ── Page config ───────────────────────────────────────────────────────────────
-st.set_page_config(page_title="Volume Calculator", page_icon="📐")
+# ── Page title ────────────────────────────────────────────────────────────────
 st.title("📐 Volume Calculator")
 st.markdown("Enter your tank dimensions to calculate water volume and weight.")
 

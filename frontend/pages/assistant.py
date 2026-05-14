@@ -14,8 +14,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from frontend.app import backend_post   # Shared POST helper
 
-# ── Page config ───────────────────────────────────────────────────────────────
-st.set_page_config(page_title="AI Assistant", page_icon="🤖")
+# ── Page title ────────────────────────────────────────────────────────────────
 st.title("🤖 AI Assistant")
 st.markdown("Ask any aquarium-related question and get AI-powered answers grounded in the knowledge base.")
 
@@ -31,7 +30,7 @@ for msg in st.session_state.history:
     role    = msg.get("role", "user")
     content = msg.get("content", "")
     with st.chat_message(role):   # "user" shows on the right, "assistant" on the left
-        st.write(content)
+        st.markdown(content)
 
 # ── Chat input ────────────────────────────────────────────────────────────────
 # st.chat_input renders a sticky input bar at the bottom of the page.
@@ -42,7 +41,7 @@ user_message = st.chat_input("Ask an aquarium question...")
 if user_message:
     # Immediately display the user's message in the chat UI
     with st.chat_message("user"):
-        st.write(user_message)
+        st.markdown(user_message)
 
     # Add the user message to history BEFORE calling the backend so it's
     # included in the history we send (the backend uses it for context)
@@ -62,7 +61,7 @@ if user_message:
 
         # Display the assistant's reply in a chat bubble
         with st.chat_message("assistant"):
-            st.write(reply)
+            st.markdown(reply)
 
             # If the backend suggested a relevant app section, show it as a tip
             if suggested_section:

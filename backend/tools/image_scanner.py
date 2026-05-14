@@ -18,6 +18,8 @@ from fastapi.responses import JSONResponse
 from PIL import Image, UnidentifiedImageError
 
 from backend import logger
+from backend.models import UserContext
+from backend.prompt_factory import PromptFactory
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -39,45 +41,6 @@ def _get_client() -> openai.OpenAI:
     if _client is None:
         _client = openai.OpenAI()
     return _client
-
-# ---------------------------------------------------------------------------
-# System prompt
-# ---------------------------------------------------------------------------
-
-_SYSTEM_PROMPT = """\
-You are an expert aquarium biologist and fish health specialist.
-The user has uploaded an image of an aquatic organism (fish or plant).
-
-Your task:
-1. Identify the most likely species name. If you cannot identify the species
-   at any confidence level, set "species_name" to null and "confidence" to
-   "inconclusive".
-2. Rate your identification confidence as one of: "high", "medium", "low",
-   or "inconclusive" (use "inconclusive" only when species_name is null).
-3. Provide a care summary (feeding, water parameters, compatibility) in no
-   more than 5 sentences. If species is inconclusive, provide general care
-   advice for the type of organism visible.
-4. Assess visible signs of illness or injury. List any observed health
-   indicators, or state "No visible issues detected" if the organism appears
-   healthy.
-
-Return ONLY valid JSON matching this exact schema (no markdown, no extra text):
-{
-  "species_name": "<string or null>",
-  "confidence": "high" | "medium" | "low" | "inconclusive",
-  "care_summary": "<string>",
-  "health_assessment": {
-    "issues_detected": ["<string>", ...] | null,
-    "status": "<string>"
-  }
-}
-
-Rules:
-- If species_name is null, confidence MUST be "inconclusive".
-- issues_detected should be null (not an empty list) when no issues are found.
-- status should be a short phrase like "Healthy", "Possible disease detected",
-  or "Unable to assess" when the image quality is insufficient.
-"""
 
 
 # ---------------------------------------------------------------------------
@@ -154,13 +117,21 @@ def scan_image(file_bytes: bytes, content_type: str) -> dict | JSONResponse:
     b64_data = base64.b64encode(file_bytes).decode("utf-8")
     data_uri = f"data:{mime};base64,{b64_data}"
 
-    # 5. Call OpenAI vision API ----------------------------------------------
+    # 5. Call OpenAI vision API — using PromptFactory "image_scanner" persona
+    # The Diagnostic Pathologist prompt asks for scientific names, look-alike
+    # comparisons, and a captivity_note for unsuitable species.
+    system_prompt = PromptFactory.get_prompt(
+        feature_id="image_scanner",
+        context="",   # Image scanner doesn't use RAG context (vision-only)
+        user=UserContext.guest(),
+    )
+
     try:
         response = _get_client().chat.completions.create(
             model="gpt-4o-mini",
             max_tokens=1500,
             messages=[
-                {"role": "system", "content": _SYSTEM_PROMPT},
+                {"role": "system", "content": system_prompt},
                 {
                     "role": "user",
                     "content": [

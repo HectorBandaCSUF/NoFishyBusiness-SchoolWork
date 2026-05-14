@@ -14,8 +14,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from frontend.app import backend_post   # Shared POST helper
 
-# ── Page config ───────────────────────────────────────────────────────────────
-st.set_page_config(page_title="Setup Guide", page_icon="🌱")
+# ── Page title ────────────────────────────────────────────────────────────────
 st.title("🌱 Setup Guide")
 st.markdown("Get personalized recommendations for setting up your new aquarium.")
 

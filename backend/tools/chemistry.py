@@ -28,6 +28,8 @@ import openai
 from fastapi.responses import JSONResponse
 
 from backend import logger, token_budget
+from backend.models import UserContext
+from backend.prompt_factory import PromptFactory
 from backend.rag import RAGError, retrieve
 from backend.topic_guard import check_topic
 
@@ -47,13 +49,7 @@ def _get_client() -> openai.OpenAI:
     return _client
 
 # ---------------------------------------------------------------------------
-# Parameter detection regex
-# Recognizable patterns:
-#   ammonia  X ppm / X mg/L
-#   nitrite  X ppm / X mg/L
-#   nitrate  X ppm / X mg/L
-#   pH       X.X  (decimal number following "ph")
-#   temperature  X °F / X F / X degrees F
+# Parameter detection regex — kept here for the input validation gate
 # ---------------------------------------------------------------------------
 
 _PARAM_PATTERNS = [
@@ -62,7 +58,6 @@ _PARAM_PATTERNS = [
     re.compile(r"\bnitrate\b.*?\d+(?:\.\d+)?", re.IGNORECASE),
     re.compile(r"\bph\b.*?\d+(?:\.\d+)?", re.IGNORECASE),
     re.compile(r"\btemperature\b.*?\d+(?:\.\d+)?", re.IGNORECASE),
-    # Also match bare numeric patterns preceded by the parameter name
     re.compile(r"\d+(?:\.\d+)?\s*(?:ppm|mg/l)", re.IGNORECASE),
     re.compile(r"\d+(?:\.\d+)?\s*(?:°f|degrees?\s*f\b)", re.IGNORECASE),
 ]
@@ -74,41 +69,6 @@ def _has_parameter_values(text: str) -> bool:
         if pattern.search(text):
             return True
     return False
-
-
-# ---------------------------------------------------------------------------
-# System prompt template
-# ---------------------------------------------------------------------------
-
-_SYSTEM_PROMPT_TEMPLATE = """\
-You are an expert aquarium water chemistry assistant. Using ONLY the threshold
-and recommendation data provided in the context below, analyze the water
-parameter readings and classify each recognized parameter.
-
-Context (freshwater aquarium thresholds and recommendations):
-{context}
-
-The user will provide water test readings. For each recognized parameter:
-- Classify it as "safe", "caution", or "danger" based on the thresholds above.
-- If the parameter is "caution" or "danger", provide a specific corrective action.
-- If the parameter is "safe", set corrective_action to null.
-
-If the query is ambiguous or not clearly aquarium-related, respond only if it
-is aquarium-related; otherwise decline politely.
-
-Return ONLY valid JSON matching this exact schema (no markdown, no extra text):
-{{
-    "parameters": [
-    {{
-        "name": "<string>",
-        "value": "<string>",
-        "status": "safe" | "caution" | "danger",
-        "corrective_action": "<string>" | null
-    }}
-    ],
-    "summary": "<string>"
-}}
-"""
 
 # ---------------------------------------------------------------------------
 # Public API
@@ -186,7 +146,14 @@ def analyze_chemistry(description: str, image_base64: str | None) -> dict | JSON
     raw_context = "\n\n".join(record.content for record in records) if records else ""
     context = token_budget.truncate_context(raw_context, 2000)
 
-    system_prompt = _SYSTEM_PROMPT_TEMPLATE.format(context=context)
+    # Use PromptFactory "chemistry" persona — the Laboratory Analyst.
+    # This prompt explains chemical interactions (e.g. pH/ammonia relationship)
+    # rather than just classifying numbers.
+    system_prompt = PromptFactory.get_prompt(
+        feature_id="chemistry",
+        context=context,
+        user=UserContext.guest(),
+    )
 
     # 5. Build messages array -------------------------------------------------
     user_content: list[dict] = [

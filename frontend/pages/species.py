@@ -14,8 +14,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from frontend.app import backend_post   # Shared POST helper
 
-# ── Page config ───────────────────────────────────────────────────────────────
-st.set_page_config(page_title="Species Tool", page_icon="🐠")
+# ── Page title ────────────────────────────────────────────────────────────────
 st.title("🐠 Species Tool")
 st.markdown("Look up care information for any freshwater aquarium fish.")
 

@@ -21,6 +21,8 @@ from fastapi.responses import JSONResponse
 
 from backend import logger
 from backend import token_budget
+from backend.models import UserContext
+from backend.prompt_factory import PromptFactory
 from backend.rag import RAGError, retrieve
 
 # ---------------------------------------------------------------------------
@@ -124,30 +126,41 @@ def get_maintenance_guide(
     # ------------------------------------------------------------------
     # 4. Build and truncate context
     # ------------------------------------------------------------------
+    species_list_str = (
+        ", ".join(fish_species) if fish_species else "unspecified species"
+    )
     raw_context = "\n\n".join(
         f"[{r.category}] {r.species_name}\n{r.content}" for r in records
     )
     context = token_budget.truncate_context(raw_context, 2000)
 
     # ------------------------------------------------------------------
-    # 5. Build prompt and call OpenAI
+    # 5. Calculate bioload and build prompt via PromptFactory
     # ------------------------------------------------------------------
-    species_list_str = (
-        ", ".join(fish_species) if fish_species else "unspecified species"
-    )
+    # Bioload = fish_count / tank_gallons ratio
+    # This drives the maintenance intensity in the "maintenance" persona prompt.
+    # The PromptFactory injects the bioload_note into the system prompt so the
+    # LLM knows whether to recommend weekly or bi-weekly water changes.
+    if tank_gallons > 0 and fish_count > 0:
+        ratio = fish_count / tank_gallons
+        if ratio < 0.2:
+            bioload_note = f"LOW bioload ({fish_count} fish in {tank_gallons}gal). Lighter schedule appropriate."
+        elif ratio < 0.5:
+            bioload_note = f"MEDIUM bioload ({fish_count} fish in {tank_gallons}gal). Standard schedule."
+        else:
+            bioload_note = f"HIGH bioload ({fish_count} fish in {tank_gallons}gal). Intensive schedule required — more frequent water changes."
+    else:
+        bioload_note = "Bioload not assessed (no fish count provided)."
 
-    system_prompt = (
-        "You are an expert aquarium maintenance advisor. "
-        "Use ONLY the context provided below to generate a maintenance guide. "
-        "Do not introduce information that is not present in the context.\n\n"
-        f"Context:\n{context}\n\n"
-        "Return your response as a JSON object with exactly these keys:\n"
-        '  "nitrogen_cycle": a string covering all three stages '
-        "(ammonia spike, nitrite spike, nitrate accumulation),\n"
-        '  "feeding": an object with "quantity" (string) and "frequency" (string),\n'
-        '  "weekly_tasks": an array of at least two weekly maintenance task strings,\n'
-        '  "monthly_tasks": an array of at least two monthly maintenance task strings.\n'
-        "Return only the JSON object — no markdown fences, no extra text."
+    system_prompt = PromptFactory.get_prompt(
+        feature_id="maintenance",
+        context=context,
+        user=UserContext.guest(),
+        extra={
+            "tank_size":    str(tank_gallons),
+            "fish_count":   str(fish_count),
+            "bioload_note": bioload_note,
+        },
     )
 
     user_prompt = (
